@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 
@@ -10,13 +12,14 @@ namespace WindKit
         {
             string username = Environment.UserName;
             string DownloadPath = @"c:\Users\" + username + @"\Downloads\WindKitTemp";
+            bool is_selected = true;
 
             void WellcomeMessage(bool FirstPrint)
             {
                 Console.Clear();
 
                 if (FirstPrint == true) { 
-                    Console.WriteLine("WindKit v0.0.1");
+                    Console.WriteLine("WindKit v0.0.2");
                 }
 
                 Console.WriteLine("--Select kit for install--");
@@ -38,6 +41,7 @@ namespace WindKit
                 Console.Clear();
                 Console.WriteLine("kitlist - To see the kit list");
                 Console.WriteLine("kitset - To see what programs are in the kits");
+                Console.WriteLine("mycustomkit - User custom kit. File with urls must have that structure - `UrlToFile` p.s one line one url");
                 Console.WriteLine("help - To see that message");
 
             }
@@ -50,6 +54,32 @@ namespace WindKit
                 Console.WriteLine("Full - Starter and Games");
                 Console.WriteLine("Full Dev - Starter, Dev and Games kits");
                 Console.WriteLine("mar4elkin kit - Full Dev kit and osu :-) ");
+            }
+
+            void TextParser(string File) {
+
+                if (new FileInfo(File).Length == 0) {
+                    
+                    WellcomeMessage(false);
+                    Console.WriteLine("Error -> File is empty");
+
+                } else { 
+
+                    string[] lines = System.IO.File.ReadAllLines(File);
+
+                    List <string> urls_list = new List<string>();
+
+                    foreach (string line in lines) {
+                        urls_list.Add(line);
+                    }
+
+                    string[] Urls_string_arr = urls_list.ToArray();
+
+                    FileDownlaodPrecess(Urls_string_arr);
+
+                    is_selected = false;
+
+                }
             }
 
             static string GetFileSize(Uri uriPath) {
@@ -92,6 +122,8 @@ namespace WindKit
                     DownloadFile(Urls[i], FileName);
 
                 }
+
+                Process.Start("explorer.exe", DownloadPath);
             }
 
             void Starter() {
@@ -164,9 +196,27 @@ namespace WindKit
                 FileDownlaodPrecess(Urls);
             }
 
-            WellcomeMessage(true);
+            void UserCustomKit() {
+                Console.Clear();
+                Console.WriteLine("Selected " + username + " kit\n" +
+                    "write down `path-to-file`. File MUST be in desctop folder and MUST be in .txt format");
 
-            bool is_selected = true;
+                string list_file_name = Console.ReadLine();
+                string path = @"c:\Users\" + username + @"\Desktop\" + list_file_name + @".txt";
+
+
+                if (File.Exists(path) == false) {
+                    WellcomeMessage(false);
+                    Console.WriteLine("Error -> File does not exist");
+                    
+                } else {
+                    TextParser(path);
+                }
+
+
+            }
+
+            WellcomeMessage(true);
 
             while(is_selected == true) { 
 
@@ -207,12 +257,20 @@ namespace WindKit
                     case "help":
                         HelpMessage();
                         break;
+                    case "mycustomkit":
+                        UserCustomKit();
+                        break;
                     default:
                         Console.WriteLine("can't find kit or command, type help to see command list");
                         break;
                 }
 
             }
+        }
+
+        private static void FileDownlaodPrecess(Func<string[]> toArray)
+        {
+            throw new NotImplementedException();
         }
     }
 }
